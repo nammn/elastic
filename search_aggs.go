@@ -19,17 +19,20 @@ type Aggregation interface {
 }
 
 // Aggregations is a list of aggregations that are part of a search result.
-type Aggregations map[string]*json.RawMessage
+type Aggregations struct {
+	results map[string]*json.RawMessage
+	decoder Decoder
+}
 
 // Min returns min aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-min-aggregation.html
 func (a Aggregations) Min(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -39,12 +42,12 @@ func (a Aggregations) Min(name string) (*AggregationValueMetric, bool) {
 // Max returns max aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-max-aggregation.html
 func (a Aggregations) Max(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -54,12 +57,12 @@ func (a Aggregations) Max(name string) (*AggregationValueMetric, bool) {
 // Sum returns sum aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-sum-aggregation.html
 func (a Aggregations) Sum(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -69,12 +72,12 @@ func (a Aggregations) Sum(name string) (*AggregationValueMetric, bool) {
 // Avg returns average aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-avg-aggregation.html
 func (a Aggregations) Avg(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -84,12 +87,12 @@ func (a Aggregations) Avg(name string) (*AggregationValueMetric, bool) {
 // ValueCount returns value-count aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-valuecount-aggregation.html
 func (a Aggregations) ValueCount(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -99,12 +102,12 @@ func (a Aggregations) ValueCount(name string) (*AggregationValueMetric, bool) {
 // Cardinality returns cardinality aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-cardinality-aggregation.html
 func (a Aggregations) Cardinality(name string) (*AggregationValueMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationValueMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -114,12 +117,12 @@ func (a Aggregations) Cardinality(name string) (*AggregationValueMetric, bool) {
 // Stats returns stats aggregation results.
 // http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-stats-aggregation.html
 func (a Aggregations) Stats(name string) (*AggregationStatsMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationStatsMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -129,12 +132,12 @@ func (a Aggregations) Stats(name string) (*AggregationStatsMetric, bool) {
 // ExtendedStats returns extended stats aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-extendedstats-aggregation.html
 func (a Aggregations) ExtendedStats(name string) (*AggregationExtendedStatsMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationExtendedStatsMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -144,12 +147,12 @@ func (a Aggregations) ExtendedStats(name string) (*AggregationExtendedStatsMetri
 // Percentiles returns percentiles results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-percentile-aggregation.html
 func (a Aggregations) Percentiles(name string) (*AggregationPercentilesMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationPercentilesMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -159,12 +162,12 @@ func (a Aggregations) Percentiles(name string) (*AggregationPercentilesMetric, b
 // PercentileRanks returns percentile ranks results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-percentile-rank-aggregation.html
 func (a Aggregations) PercentileRanks(name string) (*AggregationPercentilesMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationPercentilesMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -174,12 +177,12 @@ func (a Aggregations) PercentileRanks(name string) (*AggregationPercentilesMetri
 // TopHits returns top-hits aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-top-hits-aggregation.html
 func (a Aggregations) TopHits(name string) (*AggregationTopHitsMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationTopHitsMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -189,12 +192,12 @@ func (a Aggregations) TopHits(name string) (*AggregationTopHitsMetric, bool) {
 // Global returns global results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-global-aggregation.html
 func (a Aggregations) Global(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -204,12 +207,12 @@ func (a Aggregations) Global(name string) (*AggregationSingleBucket, bool) {
 // Filter returns filter results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-filter-aggregation.html
 func (a Aggregations) Filter(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -219,12 +222,12 @@ func (a Aggregations) Filter(name string) (*AggregationSingleBucket, bool) {
 // Filters returns filters results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-filters-aggregation.html
 func (a Aggregations) Filters(name string) (*AggregationBucketFilters, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketFilters)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -234,12 +237,12 @@ func (a Aggregations) Filters(name string) (*AggregationBucketFilters, bool) {
 // Missing returns missing results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-missing-aggregation.html
 func (a Aggregations) Missing(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -249,12 +252,12 @@ func (a Aggregations) Missing(name string) (*AggregationSingleBucket, bool) {
 // Nested returns nested results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-nested-aggregation.html
 func (a Aggregations) Nested(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -264,12 +267,12 @@ func (a Aggregations) Nested(name string) (*AggregationSingleBucket, bool) {
 // ReverseNested returns reverse-nested results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-reverse-nested-aggregation.html
 func (a Aggregations) ReverseNested(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -279,12 +282,12 @@ func (a Aggregations) ReverseNested(name string) (*AggregationSingleBucket, bool
 // Children returns children results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-children-aggregation.html
 func (a Aggregations) Children(name string) (*AggregationSingleBucket, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationSingleBucket)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -294,12 +297,12 @@ func (a Aggregations) Children(name string) (*AggregationSingleBucket, bool) {
 // Terms returns terms aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html
 func (a Aggregations) Terms(name string) (*AggregationBucketKeyItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketKeyItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -309,12 +312,12 @@ func (a Aggregations) Terms(name string) (*AggregationBucketKeyItems, bool) {
 // SignificantTerms returns significant terms aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-significantterms-aggregation.html
 func (a Aggregations) SignificantTerms(name string) (*AggregationBucketSignificantTerms, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketSignificantTerms)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -324,12 +327,12 @@ func (a Aggregations) SignificantTerms(name string) (*AggregationBucketSignifica
 // Range returns range aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html
 func (a Aggregations) Range(name string) (*AggregationBucketRangeItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketRangeItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -339,12 +342,12 @@ func (a Aggregations) Range(name string) (*AggregationBucketRangeItems, bool) {
 // KeyedRange returns keyed range aggregation results.
 // See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-range-aggregation.html.
 func (a Aggregations) KeyedRange(name string) (*AggregationBucketKeyedRangeItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketKeyedRangeItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -354,12 +357,12 @@ func (a Aggregations) KeyedRange(name string) (*AggregationBucketKeyedRangeItems
 // DateRange returns date range aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-daterange-aggregation.html
 func (a Aggregations) DateRange(name string) (*AggregationBucketRangeItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketRangeItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -369,12 +372,12 @@ func (a Aggregations) DateRange(name string) (*AggregationBucketRangeItems, bool
 // IPv4Range returns IPv4 range aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-iprange-aggregation.html
 func (a Aggregations) IPv4Range(name string) (*AggregationBucketRangeItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketRangeItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -384,12 +387,12 @@ func (a Aggregations) IPv4Range(name string) (*AggregationBucketRangeItems, bool
 // Histogram returns histogram aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-histogram-aggregation.html
 func (a Aggregations) Histogram(name string) (*AggregationBucketHistogramItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketHistogramItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -399,12 +402,12 @@ func (a Aggregations) Histogram(name string) (*AggregationBucketHistogramItems, 
 // DateHistogram returns date histogram aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-datehistogram-aggregation.html
 func (a Aggregations) DateHistogram(name string) (*AggregationBucketHistogramItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketHistogramItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -414,12 +417,12 @@ func (a Aggregations) DateHistogram(name string) (*AggregationBucketHistogramIte
 // GeoBounds returns geo-bounds aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-metrics-geobounds-aggregation.html
 func (a Aggregations) GeoBounds(name string) (*AggregationGeoBoundsMetric, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationGeoBoundsMetric)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -429,12 +432,12 @@ func (a Aggregations) GeoBounds(name string) (*AggregationGeoBoundsMetric, bool)
 // GeoHash returns geo-hash aggregation results.
 // http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-geohashgrid-aggregation.html
 func (a Aggregations) GeoHash(name string) (*AggregationBucketKeyItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketKeyItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -444,12 +447,12 @@ func (a Aggregations) GeoHash(name string) (*AggregationBucketKeyItems, bool) {
 // GeoDistance returns geo distance aggregation results.
 // See: http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/search-aggregations-bucket-geodistance-aggregation.html
 func (a Aggregations) GeoDistance(name string) (*AggregationBucketRangeItems, bool) {
-	if raw, found := a[name]; found {
+	if raw, found := a.results[name]; found {
 		agg := new(AggregationBucketRangeItems)
 		if raw == nil {
 			return agg, true
 		}
-		if err := json.Unmarshal(*raw, agg); err == nil {
+		if err := a.decoder.Decode(*raw, agg); err == nil {
 			return agg, true
 		}
 	}
@@ -469,13 +472,13 @@ type AggregationValueMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationValueMetric structure.
 func (a *AggregationValueMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["value"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Value)
+		a.decoder.Decode(*v, &a.Value)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -495,25 +498,25 @@ type AggregationStatsMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationStatsMetric structure.
 func (a *AggregationStatsMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Count)
+		a.decoder.Decode(*v, &a.Count)
 	}
 	if v, ok := aggs["min"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Min)
+		a.decoder.Decode(*v, &a.Min)
 	}
 	if v, ok := aggs["max"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Max)
+		a.decoder.Decode(*v, &a.Max)
 	}
 	if v, ok := aggs["avg"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Avg)
+		a.decoder.Decode(*v, &a.Avg)
 	}
 	if v, ok := aggs["sum"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Sum)
+		a.decoder.Decode(*v, &a.Sum)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -536,34 +539,34 @@ type AggregationExtendedStatsMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationExtendedStatsMetric structure.
 func (a *AggregationExtendedStatsMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Count)
+		a.decoder.Decode(*v, &a.Count)
 	}
 	if v, ok := aggs["min"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Min)
+		a.decoder.Decode(*v, &a.Min)
 	}
 	if v, ok := aggs["max"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Max)
+		a.decoder.Decode(*v, &a.Max)
 	}
 	if v, ok := aggs["avg"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Avg)
+		a.decoder.Decode(*v, &a.Avg)
 	}
 	if v, ok := aggs["sum"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Sum)
+		a.decoder.Decode(*v, &a.Sum)
 	}
 	if v, ok := aggs["sum_of_squares"]; ok && v != nil {
-		json.Unmarshal(*v, &a.SumOfSquares)
+		a.decoder.Decode(*v, &a.SumOfSquares)
 	}
 	if v, ok := aggs["variance"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Variance)
+		a.decoder.Decode(*v, &a.Variance)
 	}
 	if v, ok := aggs["std_deviation"]; ok && v != nil {
-		json.Unmarshal(*v, &a.StdDeviation)
+		a.decoder.Decode(*v, &a.StdDeviation)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -579,13 +582,13 @@ type AggregationPercentilesMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationPercentilesMetric structure.
 func (a *AggregationPercentilesMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["values"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Values)
+		a.decoder.Decode(*v, &a.Values)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -601,13 +604,13 @@ type AggregationTopHitsMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationTopHitsMetric structure.
 func (a *AggregationTopHitsMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	a.Hits = new(SearchHits)
 	if v, ok := aggs["hits"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Hits)
+		a.decoder.Decode(*v, &a.Hits)
 	}
 	return nil
 }
@@ -633,13 +636,13 @@ type AggregationGeoBoundsMetric struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationGeoBoundsMetric structure.
 func (a *AggregationGeoBoundsMetric) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["bounds"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Bounds)
+		a.decoder.Decode(*v, &a.Bounds)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -655,13 +658,13 @@ type AggregationSingleBucket struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationSingleBucket structure.
 func (a *AggregationSingleBucket) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -680,19 +683,19 @@ type AggregationBucketRangeItems struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketRangeItems structure.
 func (a *AggregationBucketRangeItems) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["doc_count_error_upper_bound"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCountErrorUpperBound)
+		a.decoder.Decode(*v, &a.DocCountErrorUpperBound)
 	}
 	if v, ok := aggs["sum_other_doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.SumOfOtherDocCount)
+		a.decoder.Decode(*v, &a.SumOfOtherDocCount)
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.Buckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -709,19 +712,19 @@ type AggregationBucketKeyedRangeItems struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketRangeItems structure.
 func (a *AggregationBucketKeyedRangeItems) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["doc_count_error_upper_bound"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCountErrorUpperBound)
+		a.decoder.Decode(*v, &a.DocCountErrorUpperBound)
 	}
 	if v, ok := aggs["sum_other_doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.SumOfOtherDocCount)
+		a.decoder.Decode(*v, &a.SumOfOtherDocCount)
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.Buckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -740,28 +743,28 @@ type AggregationBucketRangeItem struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketRangeItem structure.
 func (a *AggregationBucketRangeItem) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["key"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Key)
+		a.decoder.Decode(*v, &a.Key)
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
 	if v, ok := aggs["from"]; ok && v != nil {
-		json.Unmarshal(*v, &a.From)
+		a.decoder.Decode(*v, &a.From)
 	}
 	if v, ok := aggs["from_as_string"]; ok && v != nil {
-		json.Unmarshal(*v, &a.FromAsString)
+		a.decoder.Decode(*v, &a.FromAsString)
 	}
 	if v, ok := aggs["to"]; ok && v != nil {
-		json.Unmarshal(*v, &a.To)
+		a.decoder.Decode(*v, &a.To)
 	}
 	if v, ok := aggs["to_as_string"]; ok && v != nil {
-		json.Unmarshal(*v, &a.ToAsString)
+		a.decoder.Decode(*v, &a.ToAsString)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -780,19 +783,19 @@ type AggregationBucketKeyItems struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketKeyItems structure.
 func (a *AggregationBucketKeyItems) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["doc_count_error_upper_bound"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCountErrorUpperBound)
+		a.decoder.Decode(*v, &a.DocCountErrorUpperBound)
 	}
 	if v, ok := aggs["sum_other_doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.SumOfOtherDocCount)
+		a.decoder.Decode(*v, &a.SumOfOtherDocCount)
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.Buckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -814,13 +817,13 @@ func (a *AggregationBucketKeyItem) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if v, ok := aggs["key"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Key)
-		json.Unmarshal(*v, &a.KeyNumber)
+		a.decoder.Decode(*v, &a.Key)
+		a.decoder.Decode(*v, &a.KeyNumber)
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -838,16 +841,16 @@ type AggregationBucketSignificantTerms struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketSignificantTerms structure.
 func (a *AggregationBucketSignificantTerms) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.Buckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -864,22 +867,22 @@ type AggregationBucketSignificantTerm struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketSignificantTerm structure.
 func (a *AggregationBucketSignificantTerm) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["key"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Key)
+		a.decoder.Decode(*v, &a.Key)
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
 	if v, ok := aggs["bg_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.BgCount)
+		a.decoder.Decode(*v, &a.BgCount)
 	}
 	if v, ok := aggs["score"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Score)
+		a.decoder.Decode(*v, &a.Score)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -897,14 +900,14 @@ type AggregationBucketFilters struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketFilters structure.
 func (a *AggregationBucketFilters) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
-		json.Unmarshal(*v, &a.NamedBuckets)
+		a.decoder.Decode(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.NamedBuckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -921,13 +924,13 @@ type AggregationBucketHistogramItems struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketHistogramItems structure.
 func (a *AggregationBucketHistogramItems) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["buckets"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Buckets)
+		a.decoder.Decode(*v, &a.Buckets)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
 
@@ -943,18 +946,18 @@ type AggregationBucketHistogramItem struct {
 // UnmarshalJSON decodes JSON data and initializes an AggregationBucketHistogramItem structure.
 func (a *AggregationBucketHistogramItem) UnmarshalJSON(data []byte) error {
 	var aggs map[string]*json.RawMessage
-	if err := json.Unmarshal(data, &aggs); err != nil {
+	if err := a.decoder.Decode(data, &aggs); err != nil {
 		return err
 	}
 	if v, ok := aggs["key"]; ok && v != nil {
-		json.Unmarshal(*v, &a.Key)
+		a.decoder.Decode(*v, &a.Key)
 	}
 	if v, ok := aggs["key_as_string"]; ok && v != nil {
-		json.Unmarshal(*v, &a.KeyAsString)
+		a.decoder.Decode(*v, &a.KeyAsString)
 	}
 	if v, ok := aggs["doc_count"]; ok && v != nil {
-		json.Unmarshal(*v, &a.DocCount)
+		a.decoder.Decode(*v, &a.DocCount)
 	}
-	a.Aggregations = aggs
+	a.Aggregations.results = aggs
 	return nil
 }
